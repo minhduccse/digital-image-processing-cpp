@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
 #include <cmath> //M_PI
-#include "CH5.h"
+#include "CH5_spatial_domain_image_enhancement.h"
 
 using namespace std;
 
@@ -255,7 +255,7 @@ void MedianFilterOp(cv::Mat& img, int kernelHeight, int kernelWidth,
 };
 
 // void LoGFilterOp(){
-//     //p.176, CH9
+//     //p.176, CH9_image_segmentation.h
 // };
 
 void addNoise(cv::Mat& img, string mode, double mean, double stddev){

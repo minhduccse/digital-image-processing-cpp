@@ -206,7 +206,7 @@ Before and after applying Gauss band rejection filter:
 ### Color balancing
 <img src="https://github.com/keineahnung2345/digital-image-processing-cpp/blob/master/images/result/Before_and_after_color_balancing.png" alt="drawing" height="200"/>
 
-## CH8 morphology image processing
+## CH8_morphology_image_processing.h morphology image processing
 
 ### Erode using 3 x 3 square kernel and using cross kernel
 <img src="https://github.com/keineahnung2345/digital-image-processing-cpp/blob/master/images/result/erode_full_and_erode_cross.png" alt="drawing" height="200"/>
@@ -259,7 +259,7 @@ Before and after applying Gauss band rejection filter:
 ### Top-hat transform
 <img src="https://github.com/keineahnung2345/digital-image-processing-cpp/blob/master/images/result/top_hat.png" alt="drawing" height="200"/>
 
-## CH9 image segmentation
+## CH9_image_segmentation.h image segmentation
 
 ### Edge detection using Prewitt operator
 <img src="https://github.com/keineahnung2345/digital-image-processing-cpp/blob/master/images/result/edge_Prewitt.png" alt="drawing" height="200"/>

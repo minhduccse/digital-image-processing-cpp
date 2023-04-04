@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
 #include <cmath> //M_PI
-#include "CH4.h"
+#include "CH4_geometric_transformation.h"
 
 using namespace std;
 

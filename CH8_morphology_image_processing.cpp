@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
 #include <cmath> //M_PI
-#include "CH8.h"
+#include "CH8_morphology_image_processing.h"
 
 #define SHRINK
 
@@ -1183,7 +1183,7 @@ void TopHat(cv::Mat& img, BinaryKernel& kernel){
     }
 };
 
-#ifdef CH8
+#ifdef CH8.h
 int main(){
     cv::Mat img_lenna = cv::imread("images/Lenna.png", 0);
     cv::Mat img_binary = cv::imread("images/binary.png", 0);

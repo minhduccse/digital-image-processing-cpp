@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
-#include <opencv2/imgproc.hpp> //line
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/hal/interface.h> //CV_8UC3
 #include <iostream>

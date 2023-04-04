@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
 #include <cmath> //M_PI
-#include "CH7.h"
+#include "CH7_color_image_processing.h"
 
 // #define MODE 1
 

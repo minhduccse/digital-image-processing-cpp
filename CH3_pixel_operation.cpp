@@ -6,7 +6,8 @@
 #include <iostream>
 #include <map>
 #include "utility.h"
-#include "CH3.h"
+#include "CH3_pixel_operation.h"
+#include <numeric>
 
 using namespace std;
 
@@ -241,7 +242,7 @@ void DrawHist(vector<double>& hist, cv::Mat& histImage, int img_h){
     }
 };
 
-#ifdef CH3
+
 int main(){
     bool isSave = false;
     cv::Mat img = cv::imread("images/Lenna.png", 0);
@@ -338,4 +339,3 @@ int main(){
 
     return 0;
 }
-#endif

@@ -6,10 +6,10 @@
 #include <iostream>
 #include <map>
 #include <cmath> //M_PI
-#include "CH3.h"
-#include "CH5.h"
-#include "CH8.h"
-#include "CH9.h"
+#include "CH3_pixel_operation.h"
+#include "CH5_spatial_domain_image_enhancement.h"
+#include "CH8_morphology_image_processing.h"
+#include "CH9_image_segmentation.h"
 
 using namespace std;
 

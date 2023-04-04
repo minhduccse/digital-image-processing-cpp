@@ -21,6 +21,6 @@ $(TARGET): $(OBJECTS)
 CH3_pixel_operation.o: CH3_pixel_operation.cpp utility.cpp 
 	$(CXX) $(INCLUDE) -I${IDIR} $(LIBS) -c CH3_pixel_operation.cpp $(CFLAGS)
 utility.o: utility.cpp 
-	$(CXX) $(INCLUDE) $(LIBS) -c utility.cpp $(CFLAGS)
+	$(CXX) $(INCLUDE) -I${IDIR} $(LIBS) -c utility.cpp $(CFLAGS)
 clean:
 	rm -f $(TARGET) $(OBJECTS)

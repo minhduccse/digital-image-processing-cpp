@@ -516,10 +516,22 @@ void addPeriodicNoise(cv::Mat &img, double amp, double freq)
 };
 
 #ifdef CH6
-int main()
+int main(int argc, char *argv[])
 {
-    // cv::Mat img_gray = cv::imread("images/Lenna.png", 0);
-    cv::Mat img_gray = cv::imread("images/cat.jpeg", 0);
+    cv::Mat img_gray;
+    if (argc <= 1)
+    {
+        img_gray = cv::imread("images/cat.jpeg", 0);
+        // img_gray = cv::imread("images/Lenna.png", 0);
+    }
+    else if (argc >= 2)
+    {
+        img_gray = cv::imread(argv[1]);
+    }
+
+    if (img_gray.data == NULL)
+        return -1;
+
     cv::Mat work_gray = img_gray.clone();
     bool isSave = false;
     bool isExtending = true;

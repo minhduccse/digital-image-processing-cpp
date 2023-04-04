@@ -9,7 +9,7 @@
 #include <map>
 #include <iomanip> //setw
 
-#define CH9
+#define CH6
 
 using namespace std;
 

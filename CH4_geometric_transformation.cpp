@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
-#include <opencv2/imgproc.hpp> //line
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp> //line
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/core/hal/interface.h> //CV_8UC3
 #include <iostream>
 #include <map>
@@ -10,12 +10,14 @@
 
 using namespace std;
 
-bool ImMove(cv::Mat& img, int tcol, int trow){
-    //p.105
-    //img could be color or grayscale
-    //tcol: the translate distance across columns
-    //trow: the translate distance across rows
-    if(abs(tcol) >= img.cols || abs(trow) >= img.rows){
+bool ImMove(cv::Mat &img, int tcol, int trow)
+{
+    // p.105
+    // img could be color or grayscale
+    // tcol: the translate distance across columns
+    // trow: the translate distance across rows
+    if (abs(tcol) >= img.cols || abs(trow) >= img.rows)
+    {
         cout << "The absolute value of x and y should not exceed the image's width and height!" << endl;
         return false;
     }
@@ -23,43 +25,60 @@ bool ImMove(cv::Mat& img, int tcol, int trow){
     int channels = img.channels();
     cv::Mat target;
     int maxr = INT_MIN, maxc = INT_MIN;
-    if(channels == 1){
+    if (channels == 1)
+    {
 #ifdef MoveResize
-        target = cv::Mat(cv::Size(img.cols*2, img.rows*2), CV_8UC1, cv::Scalar(0));
-        for(int r = 0; r < img.rows*2; r++){
-            for(int c = 0; c < img.cols*2; c++){
+        target = cv::Mat(cv::Size(img.cols * 2, img.rows * 2), CV_8UC1, cv::Scalar(0));
+        for (int r = 0; r < img.rows * 2; r++)
+        {
+            for (int c = 0; c < img.cols * 2; c++)
+            {
 #else
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC1, cv::Scalar(0));
-        for(int r = 0; r < img.rows; r++){
-            for(int c = 0; c < img.cols; c++){
+        for (int r = 0; r < img.rows; r++)
+        {
+            for (int c = 0; c < img.cols; c++)
+            {
 #endif
-                if(r - trow >= 0 && r - trow < img.rows && c - tcol >= 0 && c - tcol < img.cols){
+                if (r - trow >= 0 && r - trow < img.rows && c - tcol >= 0 && c - tcol < img.cols)
+                {
                     //(r - trow, c - tcol): the corresponding coordinate on source image
                     target.at<uchar>(r, c) = img.at<uchar>(r - trow, c - tcol);
                     maxr = max(r, maxr);
                     maxc = max(r, maxc);
-                }else{
-                    target.at<uchar>(r, c) = 255; //or 0?
+                }
+                else
+                {
+                    target.at<uchar>(r, c) = 255; // or 0?
                 }
             }
         }
-    }else if(channels == 3){
+    }
+    else if (channels == 3)
+    {
 #ifdef MoveResize
-        target = cv::Mat(cv::Size(img.cols*2, img.rows*2), CV_8UC3, cv::Vec3b(0, 0, 0));
-        for(int r = 0; r < img.rows*2; r++){
-            for(int c = 0; c < img.cols*2; c++){
+        target = cv::Mat(cv::Size(img.cols * 2, img.rows * 2), CV_8UC3, cv::Vec3b(0, 0, 0));
+        for (int r = 0; r < img.rows * 2; r++)
+        {
+            for (int c = 0; c < img.cols * 2; c++)
+            {
 #else
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC3, cv::Vec3b(0, 0, 0));
-        for(int r = 0; r < img.rows; r++){
-            for(int c = 0; c < img.cols; c++){
+        for (int r = 0; r < img.rows; r++)
+        {
+            for (int c = 0; c < img.cols; c++)
+            {
 #endif
-                if(r - trow >= 0 && r - trow < img.rows && c - tcol >= 0 && c - tcol < img.cols){
+                if (r - trow >= 0 && r - trow < img.rows && c - tcol >= 0 && c - tcol < img.cols)
+                {
                     //(r - trow, c - tcol): the corresponding coordinate on source image
                     target.at<cv::Vec3b>(r, c) = img.at<cv::Vec3b>(r - trow, c - tcol);
                     maxr = max(r, maxr);
                     maxc = max(r, maxc);
-                }else{
-                    target.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255); //or 0?
+                }
+                else
+                {
+                    target.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255); // or 0?
                 }
             }
         }
@@ -73,21 +92,29 @@ bool ImMove(cv::Mat& img, int tcol, int trow){
     img = target;
 }
 
-void HorMirror(cv::Mat& img){
-    //p.108
+void HorMirror(cv::Mat &img)
+{
+    // p.108
     int channels = img.channels();
     cv::Mat target;
-    if(channels == 1){
+    if (channels == 1)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC1, cv::Scalar(0));
-        for(int r = 0; r < img.rows; r++){
-            for(int c = 0; c < img.cols; c++){
+        for (int r = 0; r < img.rows; r++)
+        {
+            for (int c = 0; c < img.cols; c++)
+            {
                 target.at<uchar>(r, c) = img.at<uchar>(r, img.cols - c);
             }
         }
-    }else if(channels == 3){
+    }
+    else if (channels == 3)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC3, cv::Vec3b(0, 0, 0));
-        for(int r = 0; r < img.rows; r++){
-            for(int c = 0; c < img.cols; c++){
+        for (int r = 0; r < img.rows; r++)
+        {
+            for (int c = 0; c < img.cols; c++)
+            {
                 target.at<cv::Vec3b>(r, c) = img.at<cv::Vec3b>(r, img.cols - c);
             }
         }
@@ -95,21 +122,29 @@ void HorMirror(cv::Mat& img){
     img = target;
 }
 
-void VerMirror(cv::Mat& img){
-    //p.109
+void VerMirror(cv::Mat &img)
+{
+    // p.109
     int channels = img.channels();
     cv::Mat target;
-    if(channels == 1){
+    if (channels == 1)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC1, cv::Scalar(0));
-        for(int r = 0; r < img.rows; r++){
-            for(int c = 0; c < img.cols; c++){
+        for (int r = 0; r < img.rows; r++)
+        {
+            for (int c = 0; c < img.cols; c++)
+            {
                 target.at<uchar>(r, c) = img.at<uchar>(img.rows - r, c);
             }
         }
-    }else if(channels == 3){
+    }
+    else if (channels == 3)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC3, cv::Vec3b(0, 0, 0));
-        for(int r = 0; r < img.rows; r++){
-            for(int c = 0; c < img.cols; c++){
+        for (int r = 0; r < img.rows; r++)
+        {
+            for (int c = 0; c < img.cols; c++)
+            {
                 target.at<cv::Vec3b>(r, c) = img.at<cv::Vec3b>(img.rows - r, c);
             }
         }
@@ -117,35 +152,48 @@ void VerMirror(cv::Mat& img){
     img = target;
 }
 
-void Scale(cv::Mat& img, double times){
-    //p.113
+void Scale(cv::Mat &img, double times)
+{
+    // p.113
     int channels = img.channels();
     cv::Mat target;
-    if(channels == 1){
-        target = cv::Mat(cv::Size((int)(img.cols*times), (int)(img.rows*times)), CV_8UC1, cv::Scalar(0));
+    if (channels == 1)
+    {
+        target = cv::Mat(cv::Size((int)(img.cols * times), (int)(img.rows * times)), CV_8UC1, cv::Scalar(0));
         // cout << target.rows << " * " << target.cols << endl;
-        for(int r = 0; r < target.rows; r++){
-            for(int c = 0; c < target.cols; c++){
-                int srcr = ceil(r/times), srcc = ceil(c/times);
+        for (int r = 0; r < target.rows; r++)
+        {
+            for (int c = 0; c < target.cols; c++)
+            {
+                int srcr = ceil(r / times), srcc = ceil(c / times);
                 // cout << srcr << " " << srcc << " | ";
-                if(srcr >= 0 && srcr < img.rows && srcc >= 0 && srcc < img.cols){
+                if (srcr >= 0 && srcr < img.rows && srcc >= 0 && srcc < img.cols)
+                {
                     target.at<uchar>(r, c) = img.at<uchar>(srcr, srcc);
-                }else{
+                }
+                else
+                {
                     target.at<uchar>(r, c) = 255;
                 }
-                
             }
         }
-    }else if(channels == 3){
-        target = cv::Mat(cv::Size((int)(img.cols*times), (int)(img.rows*times)), CV_8UC3, cv::Vec3b(0, 0, 0));
+    }
+    else if (channels == 3)
+    {
+        target = cv::Mat(cv::Size((int)(img.cols * times), (int)(img.rows * times)), CV_8UC3, cv::Vec3b(0, 0, 0));
         // cout << target.rows << " * " << target.cols << endl;
-        for(int r = 0; r < target.rows; r++){
-            for(int c = 0; c < target.cols; c++){
-                int srcr = ceil(r/times), srcc = ceil(c/times);
+        for (int r = 0; r < target.rows; r++)
+        {
+            for (int c = 0; c < target.cols; c++)
+            {
+                int srcr = ceil(r / times), srcc = ceil(c / times);
                 // cout << srcr << " " << srcc << " | ";
-                if(srcr >= 0 && srcr < img.rows && srcc >= 0 && srcc < img.cols){
+                if (srcr >= 0 && srcr < img.rows && srcc >= 0 && srcc < img.cols)
+                {
                     target.at<cv::Vec3b>(r, c) = img.at<cv::Vec3b>(srcr, srcc);
-                }else{
+                }
+                else
+                {
                     target.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
                     // cout << srcr << " " << srcc << " | ";
                 }
@@ -156,9 +204,10 @@ void Scale(cv::Mat& img, double times){
     img = target;
 }
 
-void Rotate(cv::Mat& img, float angle){
-    //left top corner is the original point
-    //p.117
+void Rotate(cv::Mat &img, float angle)
+{
+    // left top corner is the original point
+    // p.117
     /*
     transform
     (x', y') = (xcos-ysin, sinx+cosy)
@@ -167,26 +216,40 @@ void Rotate(cv::Mat& img, float angle){
     */
     int channels = img.channels();
     cv::Mat target;
-    if(channels == 1){
+    if (channels == 1)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC1, cv::Scalar(0));
-    }else if(channels == 3){
+    }
+    else if (channels == 3)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC3, cv::Vec3b(0, 0, 0));
     }
 
-    for(int r = 0; r < img.rows; r++){
-        for(int c = 0; c < img.cols; c++){
-            int src_r = r*cos(angle*M_PI/180.0)+c*sin(angle*M_PI/180.0);
-            int src_c = r*(-sin(angle*M_PI/180.0))+c*cos(angle*M_PI/180.0);
-            if(channels == 1){
-                if(src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols){
+    for (int r = 0; r < img.rows; r++)
+    {
+        for (int c = 0; c < img.cols; c++)
+        {
+            int src_r = r * cos(angle * M_PI / 180.0) + c * sin(angle * M_PI / 180.0);
+            int src_c = r * (-sin(angle * M_PI / 180.0)) + c * cos(angle * M_PI / 180.0);
+            if (channels == 1)
+            {
+                if (src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols)
+                {
                     target.at<uchar>(r, c) = img.at<uchar>(src_r, src_c);
-                }else{
+                }
+                else
+                {
                     target.at<uchar>(r, c) = 255;
                 }
-            }else if(channels == 3){
-                if(src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols){
+            }
+            else if (channels == 3)
+            {
+                if (src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols)
+                {
                     target.at<cv::Vec3b>(r, c) = img.at<cv::Vec3b>(src_r, src_c);
-                }else{
+                }
+                else
+                {
                     target.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
                 }
             }
@@ -195,10 +258,11 @@ void Rotate(cv::Mat& img, float angle){
     img = target;
 }
 
-void Rotate(cv::Mat& img, float angle, int center_col, int center_row){
-    //still not work
+void Rotate(cv::Mat &img, float angle, int center_col, int center_row)
+{
+    // still not work
     //(center_i, center_j) is the original point
-    //p.115
+    // p.115
     /*
     transform
     (x', y') = (xcos-ysin, sinx+cosy)
@@ -206,36 +270,53 @@ void Rotate(cv::Mat& img, float angle, int center_col, int center_row){
     (x, y) = (x'cos+y'sin, -sinx'+cosy')
     */
     int channels = img.channels();
-    if(channels == 1){
-        //cv::Point(w, h): first argument is in left-right direction
+    if (channels == 1)
+    {
+        // cv::Point(w, h): first argument is in left-right direction
         cv::circle(img, cv::Point(center_col, center_row), 10, cv::Scalar(0), cv::FILLED);
-    }else if(channels == 3){
+    }
+    else if (channels == 3)
+    {
         cv::circle(img, cv::Point(center_col, center_row), 10, cv::Scalar(0, 0, 255), cv::FILLED);
     }
 
     ImMove(img, -center_col, -center_row);
 
     cv::Mat target;
-    if(channels == 1){
+    if (channels == 1)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC1, cv::Scalar(0));
-    }else if(channels == 3){
+    }
+    else if (channels == 3)
+    {
         target = cv::Mat(cv::Size(img.cols, img.rows), CV_8UC3, cv::Vec3b(0, 0, 0));
     }
 
-    for(int r = 0; r < img.rows; r++){
-        for(int c = 0; c < img.cols; c++){
-            int src_r = r*cos(angle*M_PI/180.0)+c*sin(angle*M_PI/180.0);
-            int src_c = r*(-sin(angle*M_PI/180.0))+c*cos(angle*M_PI/180.0);
-            if(channels == 1){
-                if(src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols){
+    for (int r = 0; r < img.rows; r++)
+    {
+        for (int c = 0; c < img.cols; c++)
+        {
+            int src_r = r * cos(angle * M_PI / 180.0) + c * sin(angle * M_PI / 180.0);
+            int src_c = r * (-sin(angle * M_PI / 180.0)) + c * cos(angle * M_PI / 180.0);
+            if (channels == 1)
+            {
+                if (src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols)
+                {
                     target.at<uchar>(r, c) = img.at<uchar>(src_r, src_c);
-                }else{
+                }
+                else
+                {
                     target.at<uchar>(r, c) = 255;
                 }
-            }else if(channels == 3){
-                if(src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols){
+            }
+            else if (channels == 3)
+            {
+                if (src_r >= 0 && src_r < img.rows && src_c >= 0 && src_c < img.cols)
+                {
                     target.at<cv::Vec3b>(r, c) = img.at<cv::Vec3b>(src_r, src_c);
-                }else{
+                }
+                else
+                {
                     target.at<cv::Vec3b>(r, c) = cv::Vec3b(255, 255, 255);
                 }
             }
@@ -247,45 +328,55 @@ void Rotate(cv::Mat& img, float angle, int center_col, int center_row){
     img = target;
 }
 
-int InterpBilinear(cv::Mat& img, double x, double y){
-    //p.120
-    //return the interpolation value for (x, y)
+int InterpBilinear(cv::Mat &img, double x, double y)
+{
+    // p.120
+    // return the interpolation value for (x, y)
     int width = img.cols, height = img.rows;
-    if(x < 0 || x >= width || y < 0 || y >= height){
+    if (x < 0 || x >= width || y < 0 || y >= height)
+    {
         return -1;
     }
-    int x1 = x; //round down
-    int x2 = x1+1; //round up
-    int y1= y;
-    int y2 = y1+1;
+    int x1 = x;      // round down
+    int x2 = x1 + 1; // round up
+    int y1 = y;
+    int y2 = y1 + 1;
 
     /*
-    Note that (x, y) resides in the pixel (x1, y1), 
+    Note that (x, y) resides in the pixel (x1, y1),
     and x2 or y2 may exceed the range of the image
     */
 
-    if(x2 >= width){
-        //on the right edge
-        if(y2 >= height){
-            //on the bottom-right corner
-            // cout << "bottom-right corner" << endl;
+    if (x2 >= width)
+    {
+        // on the right edge
+        if (y2 >= height)
+        {
+            // on the bottom-right corner
+            //  cout << "bottom-right corner" << endl;
             return img.at<uchar>(x1, y1);
-        }else{
-            //on right edge, not at corner, interpolate once
+        }
+        else
+        {
+            // on right edge, not at corner, interpolate once
             int ft = img.at<uchar>(x1, y1);
             int fb = img.at<uchar>(x1, y2);
-            cout << "on right edge, top: " << ft << ", bottom: " << fb << ", dist: " << y-y1 << endl;
+            cout << "on right edge, top: " << ft << ", bottom: " << fb << ", dist: " << y - y1 << endl;
             return (int)(ft + (fb - ft) * (y - y1));
         }
-    }else if(y2 >= height){
-        //on the bottom edge, interpolate once
-        //y2 is invalid
+    }
+    else if (y2 >= height)
+    {
+        // on the bottom edge, interpolate once
+        // y2 is invalid
         int fl = img.at<uchar>(x1, y1);
         int fr = img.at<uchar>(x2, y1);
         cout << "on bottom edge, left: " << fl << ", right: " << fr << ", dist: " << x - x1 << endl;
         return (int)(fl + (fr - fl) * (x - x1));
-    }else{
-        //not at edge or corner, interpolate twice
+    }
+    else
+    {
+        // not at edge or corner, interpolate twice
         int flt = img.at<uchar>(x1, y1);
         int flb = img.at<uchar>(x1, y2);
         int frt = img.at<uchar>(x2, y1);
@@ -300,8 +391,9 @@ int InterpBilinear(cv::Mat& img, double x, double y){
     }
 }
 
-void InterpCubic(double x, double y){
-    //p.122, Matlab
+void InterpCubic(double x, double y)
+{
+    // p.122, Matlab
 }
 
 // void cp2tform(vector<vector<double>>& input_points, vector<vector<double>>& base_points, vector<vector<double>>& transform, string transform_type = "affine"){
@@ -309,101 +401,120 @@ void InterpCubic(double x, double y){
 //     //fit a transform from input_points to base_points
 // }
 
-void GetProjPara(vector<vector<double>>& basePoints, vector<vector<double>>& srcPoints, vector<double>& projectionPara){
+void GetProjPara(vector<vector<double>> &basePoints, vector<vector<double>> &srcPoints, vector<double> &projectionPara)
+{
     /*
     We want to project srcPoints onto basePoints,
     here we calculate the "INVERSE" transformation.
     It maps basePoints to srcPoints, later we will iterating target image,
-    and use this transformation to find out which source point do we need for interpolation. 
+    and use this transformation to find out which source point do we need for interpolation.
 
     We use bilinear equation, so we need at least 4 pairs of base and source points
     There will be 4 * 2 = 8 parameters in the result "projectionPara"
     */
 
     vector<vector<double>> coefMatrix(4, vector<double>(4, 0.0));
-    for(int i = 0; i < 4; i++){
-        coefMatrix[i][0] = basePoints[i][0]; //x coordinate
-        coefMatrix[i][1] = basePoints[i][1]; //y coordinate
-        coefMatrix[i][2] = basePoints[i][0] * basePoints[i][1]; //x * y
+    for (int i = 0; i < 4; i++)
+    {
+        coefMatrix[i][0] = basePoints[i][0];                    // x coordinate
+        coefMatrix[i][1] = basePoints[i][1];                    // y coordinate
+        coefMatrix[i][2] = basePoints[i][0] * basePoints[i][1]; // x * y
         coefMatrix[i][3] = 1;
     }
 
-    //calculate its inverse matrix in-place
+    // calculate its inverse matrix in-place
     InvMat(coefMatrix);
 
     vector<vector<double>> srcXs(4, vector<double>(1, 0.0));
-    for(int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++)
+    {
         srcXs[i][0] = srcPoints[i][0];
     }
 
     vector<vector<double>> c1234;
-    //coefMatrix: 4x4, srcXs: 4x1, c1234: 4x1
+    // coefMatrix: 4x4, srcXs: 4x1, c1234: 4x1
     ProdMat(coefMatrix, srcXs, c1234);
 
     vector<vector<double>> srcYs(4, vector<double>(1, 0.0));
-    for(int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++)
+    {
         srcYs[i][0] = srcPoints[i][1];
     }
 
     vector<vector<double>> c5678;
-    //coefMatrix: 4x4, srcYs: 4x1, c5678: 4x1
+    // coefMatrix: 4x4, srcYs: 4x1, c5678: 4x1
     ProdMat(coefMatrix, srcYs, c5678);
 
-    //copy the result to projectionPara
-    for(int i = 0; i < 4; i++){
+    // copy the result to projectionPara
+    for (int i = 0; i < 4; i++)
+    {
         projectionPara.push_back(c1234[i][0]);
     }
-    for(int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++)
+    {
         projectionPara.push_back(c5678[i][0]);
     }
 };
 
-void ProjTrans(vector<double>& srcPoint, vector<double>& projectionPara, vector<double>& dstPoint){
-    //p.135
-    //transform source points by the give projection parameters to get destination point
+void ProjTrans(vector<double> &srcPoint, vector<double> &projectionPara, vector<double> &dstPoint)
+{
+    // p.135
+    // transform source points by the give projection parameters to get destination point
     dstPoint = vector<double>(2, 0.0);
 
-    dstPoint[0] = srcPoint[0] *               projectionPara[0] +
-                  srcPoint[1] *               projectionPara[1] +
+    dstPoint[0] = srcPoint[0] * projectionPara[0] +
+                  srcPoint[1] * projectionPara[1] +
                   srcPoint[0] * srcPoint[1] * projectionPara[2] +
-                  1 *                         projectionPara[3];
+                  1 * projectionPara[3];
 
-    dstPoint[1] = srcPoint[0] *               projectionPara[4] +
-                  srcPoint[1] *               projectionPara[5] +
+    dstPoint[1] = srcPoint[0] * projectionPara[4] +
+                  srcPoint[1] * projectionPara[5] +
                   srcPoint[0] * srcPoint[1] * projectionPara[6] +
-                  1 *                         projectionPara[7];
+                  1 * projectionPara[7];
 };
 
-bool ImProjRestore(cv::Mat& img, vector<vector<double>>& basePoints, vector<vector<double>>& srcPoints, bool isInterp){
+bool ImProjRestore(cv::Mat &img, vector<vector<double>> &basePoints, vector<vector<double>> &srcPoints, bool isInterp)
+{
     vector<double> projectionPara;
     GetProjPara(basePoints, srcPoints, projectionPara);
-    
+
     int height = img.rows, width = img.cols;
 
     cv::Mat dst(cv::Size(width, height), CV_8UC1, cv::Scalar(0));
 
-    for(int row = 0; row < height; row++){
-        for(int col = 0; col < width; col++){
+    for (int row = 0; row < height; row++)
+    {
+        for (int col = 0; col < width; col++)
+        {
             vector<double> dstPoint = {(double)row, (double)col};
             vector<double> srcPoint;
             ProjTrans(dstPoint, projectionPara, srcPoint);
-            if(isInterp){
-                //interpolation
+            if (isInterp)
+            {
+                // interpolation
                 int gray = InterpBilinear(img, srcPoint[0], srcPoint[1]);
-                if(gray >= 0){
-                    //it's valid
+                if (gray >= 0)
+                {
+                    // it's valid
                     dst.at<uchar>(row, col) = gray;
-                }else{
-                    //it's invalid
+                }
+                else
+                {
+                    // it's invalid
                     dst.at<uchar>(row, col) = 255;
                 }
-            }else{
-                //nearest interpolation
+            }
+            else
+            {
+                // nearest interpolation
                 int srcRow = round(srcPoint[0]);
                 int srcCol = round(srcPoint[1]);
-                if(srcRow >= 0 && srcRow < height && srcCol >= 0 && srcCol < width){
+                if (srcRow >= 0 && srcRow < height && srcCol >= 0 && srcCol < width)
+                {
                     dst.at<uchar>(row, col) = img.at<uchar>(srcRow, srcCol);
-                }else{
+                }
+                else
+                {
                     dst.at<uchar>(row, col) = 255;
                 }
             }
@@ -413,39 +524,39 @@ bool ImProjRestore(cv::Mat& img, vector<vector<double>>& basePoints, vector<vect
     img = dst;
 };
 
-
-void fitBasePoints(cv::Mat& img, vector<vector<double>>& basePoints){
-    //start from left-top corner, clock-wise
-    // basePoints = {
-    //     {0,0},
-    //     {0,31*9},
-    //     {10*9,31*9},
-    //     {10*9,0}
-    // };
+void fitBasePoints(cv::Mat &img, vector<vector<double>> &basePoints)
+{
+    // start from left-top corner, clock-wise
+    //  basePoints = {
+    //      {0,0},
+    //      {0,31*9},
+    //      {10*9,31*9},
+    //      {10*9,0}
+    //  };
     int w = img.cols, h = img.rows;
-    //x's center, image's center
-    double ratio = min(w/310.0, h/100.0);
-    double xl = ratio * (w/2 - 310.0/2);
-    double xr = ratio * (w/2 + 310.0/2);
-    double yt = ratio * (h/2 - 100.0/2);
-    double yb = ratio * (h/2 + 100.0/2);
+    // x's center, image's center
+    double ratio = min(w / 310.0, h / 100.0);
+    double xl = ratio * (w / 2 - 310.0 / 2);
+    double xr = ratio * (w / 2 + 310.0 / 2);
+    double yt = ratio * (h / 2 - 100.0 / 2);
+    double yb = ratio * (h / 2 + 100.0 / 2);
     basePoints = {
         {yt, xl},
         {yt, xr},
         {yb, xr},
-        {yb, xl}
-    };
+        {yb, xl}};
 };
 
 #ifdef CH4
-int main(){
+int main()
+{
     cv::Mat img_color = cv::imread("images/Lenna.png");
     cv::Mat img_gray = cv::imread("images/Lenna.png", 0);
     cv::Mat work_color = img_color.clone();
     cv::Mat work_gray = img_gray.clone();
     bool isSave = false;
 
-    //Move
+    // Move
     cout << "Please input the x and y to move the image..." << endl;
     int mx, my;
     cin >> mx >> my;
@@ -457,7 +568,7 @@ int main(){
     ImMove(work_gray, mx, my);
     Show(work_gray, moveTitle + " gray", isSave);
 
-    //Horizontal Mirror
+    // Horizontal Mirror
     cout << "Horizontal Mirror" << endl;
     work_color = img_color.clone();
     HorMirror(work_color);
@@ -466,7 +577,7 @@ int main(){
     HorMirror(work_gray);
     Show(work_gray, "Horizontal Mirror gray", isSave);
 
-    //Vertical Mirror
+    // Vertical Mirror
     cout << "Vertical Mirror" << endl;
     work_color = img_color.clone();
     VerMirror(work_color);
@@ -475,7 +586,7 @@ int main(){
     VerMirror(work_gray);
     Show(work_gray, "Vertical Mirror gray", isSave);
 
-    //Scale
+    // Scale
     cout << "Please input the ratio for scaling..." << endl;
     double ratio;
     cin >> ratio;
@@ -488,7 +599,7 @@ int main(){
     Scale(work_gray, ratio);
     Show(work_gray, scaleTitle + " gray", isSave);
 
-    //Rotate
+    // Rotate
     cout << "Please input the angle for rotating..." << endl;
     double angle;
     cin >> angle;
@@ -515,7 +626,7 @@ int main(){
     // work_gray = img_gray.clone();
     // Rotate(work_gray, angle_any, center_i, center_j);
     // Show(work_gray, "Rotate around any point", isSave);
-    
+
     // //Bilinear interpolation
     // cout << "Please input the (x, y) coordinate for calculating bilinear interpolation..." << endl;
     // double cx, cy;
@@ -542,42 +653,45 @@ int main(){
     // ProdMat(mat, inv, prod);
     // cout << "Their product: " << endl;
     // PrintMatrix(prod);
-    
-    //Image Projection Restore
-    // p.128-139
-    for(int i = 1; i <= 2; i++){
+
+    // Image Projection Restore
+    //  p.128-139
+    for (int i = 1; i <= 2; i++)
+    {
         string picName = "images/license_plate" + to_string(i) + ".jfif";
         cv::Mat license_plate = cv::imread(picName, 0);
 
-        //Calculate bilinear projection parameters
+        // Calculate bilinear projection parameters
         vector<vector<double>> basePoints;
         fitBasePoints(license_plate, basePoints);
 
         vector<vector<double>> srcPoints;
-        
-        if(i == 1){
+
+        if (i == 1)
+        {
             srcPoints = {
-                {51,94},
-                {54,203},
-                {121,195},
-                {102,88}
-            };
-        }else if(i == 2){
+                {51, 94},
+                {54, 203},
+                {121, 195},
+                {102, 88}};
+        }
+        else if (i == 2)
+        {
             srcPoints = {
-                {51,11},
-                {5,237},
-                {92,252},
-                {173,51}
-            };
+                {51, 11},
+                {5, 237},
+                {92, 252},
+                {173, 51}};
         }
 
         vector<double> projectionPara;
         GetProjPara(basePoints, srcPoints, projectionPara);
         // PrintVector(projectionPara);
 
-        for(int i = 0; i < basePoints.size(); i++){
+        for (int i = 0; i < basePoints.size(); i++)
+        {
             vector<double> dstPoint;
-            //Note taht "projectionPara" map basePoint to srcPoint!
+            // Note taht "projectionPara" map basePoint to srcPoint!
             ProjTrans(basePoints[i], projectionPara, dstPoint);
             // cout << srcPoints[i][0] << ", " << srcPoints[i][1] << " v.s. " << dstPoint[0] << ", " << dstPoint[1] << endl;
         }

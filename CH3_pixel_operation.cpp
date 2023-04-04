@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
-#include <opencv2/imgproc.hpp> //line
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp> //line
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/core/hal/interface.h> //CV_8UC3
 #include <iostream>
 #include <map>
@@ -11,68 +11,87 @@
 
 using namespace std;
 
-bool GenHist(cv::Mat& img, vector<double>& pdHist, int n, bool normalize){
-    //p.68
-    //output is probability range from 0 to 1
-    if(type2str(img.type()) != "8UC1") return false;
-    if(n <= 0 || n > 256) return false;
+bool GenHist(cv::Mat &img, vector<double> &pdHist, int n, bool normalize)
+{
+    // p.68
+    // output is probability range from 0 to 1
+    if (type2str(img.type()) != "8UC1")
+        return false;
+    if (n <= 0 || n > 256)
+        return false;
     pdHist = vector<double>(n, 0);
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             int val = (int)img.at<uchar>(i, j);
-            pdHist[(int)val * (n/256.0)]++;
+            pdHist[(int)val * (n / 256.0)]++;
         }
     }
 
     int pixelCount = img.rows * img.cols;
 
-    if(normalize){
-        for(int i = 0; i < pdHist.size(); i++){
+    if (normalize)
+    {
+        for (int i = 0; i < pdHist.size(); i++)
+        {
             pdHist[i] /= (double)pixelCount;
         }
     }
     return true;
 };
 
-bool LinTran(cv::Mat& img, double dFa, double dFb){
-    //p.73
-    if(type2str(img.type()) != "8UC1") return false;
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+bool LinTran(cv::Mat &img, double dFa, double dFb)
+{
+    // p.73
+    if (type2str(img.type()) != "8UC1")
+        return false;
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             double val = img.at<uchar>(i, j);
-            val =  (val * dFa + dFb);
-            img.at<uchar>(i, j) = min(max((int)val, 0), 255); 
+            val = (val * dFa + dFb);
+            img.at<uchar>(i, j) = min(max((int)val, 0), 255);
         }
     }
     return true;
 };
 
-bool LogTran(cv::Mat& img, double dC){
-    //p.75
-    if(type2str(img.type()) != "8UC1") return false;
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+bool LogTran(cv::Mat &img, double dC)
+{
+    // p.75
+    if (type2str(img.type()) != "8UC1")
+        return false;
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             double val = img.at<uchar>(i, j);
-            val = dC * log(val+1);
-            img.at<uchar>(i, j) = min(max((int)val, 0), 255); 
+            val = dC * log(val + 1);
+            img.at<uchar>(i, j) = min(max((int)val, 0), 255);
         }
     }
     return true;
 };
 
-bool GammaTran(cv::Mat& img, double gamma, double comp){
-    //p.79
-    //gamma can be 0.75, 1, 1.5...
-    if(type2str(img.type()) != "8UC1") return false;
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+bool GammaTran(cv::Mat &img, double gamma, double comp)
+{
+    // p.79
+    // gamma can be 0.75, 1, 1.5...
+    if (type2str(img.type()) != "8UC1")
+        return false;
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             double val = img.at<uchar>(i, j);
-            //compensate
+            // compensate
             val += comp;
-            //normalize
+            // normalize
             val /= 255.0;
             val = pow(val, gamma);
-            //denormalize
+            // denormalize
             val *= 255.0;
             img.at<uchar>(i, j) = val;
         }
@@ -80,90 +99,112 @@ bool GammaTran(cv::Mat& img, double gamma, double comp){
     return true;
 };
 
-bool Threshold(cv::Mat& img, int nThres){
-    //p.82
-    if(type2str(img.type()) != "8UC1") return false;
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+bool Threshold(cv::Mat &img, int nThres)
+{
+    // p.82
+    if (type2str(img.type()) != "8UC1")
+        return false;
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             img.at<uchar>(i, j) = (img.at<uchar>(i, j) < nThres) ? 0 : 255;
-            //cout << (int)img.at<uchar>(i, j) << " ";
+            // cout << (int)img.at<uchar>(i, j) << " ";
         }
-        //cout << endl;
+        // cout << endl;
     }
     return true;
 };
 
-bool ParLinTran(cv::Mat& img, int x1, int x2, int y1, int y2){
-    //p.89
-    if(type2str(img.type()) != "8UC1") return false;
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+bool ParLinTran(cv::Mat &img, int x1, int x2, int y1, int y2)
+{
+    // p.89
+    if (type2str(img.type()) != "8UC1")
+        return false;
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             double val = img.at<uchar>(i, j);
             double slope;
-            if(val < x1){
-                slope = (double)y1/x1;
+            if (val < x1)
+            {
+                slope = (double)y1 / x1;
                 val *= slope;
-            }else if(val < x2){
-                //x1 <= val < x2
-                slope = (double)(y2-y1)/(x2-x1);
-                val = (val-x1) * slope + y1;
-            }else{
-                //val >= x2
-                slope = (double)(255-y2)/(255-x2);
-                val = (val-x2) * slope + y2;
             }
-            img.at<uchar>(i, j) = min(max((int)val, 0), 255); 
+            else if (val < x2)
+            {
+                // x1 <= val < x2
+                slope = (double)(y2 - y1) / (x2 - x1);
+                val = (val - x1) * slope + y1;
+            }
+            else
+            {
+                // val >= x2
+                slope = (double)(255 - y2) / (255 - x2);
+                val = (val - x2) * slope + y2;
+            }
+            img.at<uchar>(i, j) = min(max((int)val, 0), 255);
             img.at<uchar>(i, j) = val;
         }
     }
     return true;
 };
 
-bool GetHisteqMap(cv::Mat& img, vector<int>& histeqMap){
-    //utility function
-    if(type2str(img.type()) != "8UC1") return false;
+bool GetHisteqMap(cv::Mat &img, vector<int> &histeqMap)
+{
+    // utility function
+    if (type2str(img.type()) != "8UC1")
+        return false;
     vector<double> hist;
     int binCount = 256;
     GenHist(img, hist, binCount);
 
     histeqMap = vector<int>(256, 0);
-    for(int i = 0; i < 256; i++){
+    for (int i = 0; i < 256; i++)
+    {
         double acc = 0;
-        //the cumulative probability before i
-        //because hist is a vector of double, we need to use 0.0 here!!
-        acc = accumulate(hist.begin(), hist.begin()+i, 0.0);
-        //map it to the scale of [0, 255]
+        // the cumulative probability before i
+        // because hist is a vector of double, we need to use 0.0 here!!
+        acc = accumulate(hist.begin(), hist.begin() + i, 0.0);
+        // map it to the scale of [0, 255]
         acc *= 255;
-        acc = min(max((int)acc, 0), 255); 
+        acc = min(max((int)acc, 0), 255);
         histeqMap[i] = (int)acc;
     }
 
     return true;
 }
 
-bool Histeq(cv::Mat& img){
-    //p.93
+bool Histeq(cv::Mat &img)
+{
+    // p.93
     vector<int> histeqMap;
 
-    if(!GetHisteqMap(img, histeqMap)) return false;
+    if (!GetHisteqMap(img, histeqMap))
+        return false;
 
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             img.at<uchar>(i, j) = histeqMap[img.at<uchar>(i, j)];
         }
     }
     return true;
 };
 
-void GetInverseEqHist(vector<double>& hist, vector<int>& inverseHistEqMap){
-    //input hist is the normalized histogram
-    //initialize as -1!
+void GetInverseEqHist(vector<double> &hist, vector<int> &inverseHistEqMap)
+{
+    // input hist is the normalized histogram
+    // initialize as -1!
     inverseHistEqMap = vector<int>(256, -1);
 
-    //find the inverse of histeqmap
-    for(int i = 0; i < 256; i++){
-        double acc = accumulate(hist.begin(), hist.begin()+i, 0.0);
-        inverseHistEqMap[round(acc*255)] = i;
+    // find the inverse of histeqmap
+    for (int i = 0; i < 256; i++)
+    {
+        double acc = accumulate(hist.begin(), hist.begin() + i, 0.0);
+        inverseHistEqMap[round(acc * 255)] = i;
     }
 
     // for(int i = 0; i < 256; i++){
@@ -171,16 +212,19 @@ void GetInverseEqHist(vector<double>& hist, vector<int>& inverseHistEqMap){
     // }
     // cout << endl;
 
-    //make sure every element in the domain [0,255] is meaningful
+    // make sure every element in the domain [0,255] is meaningful
     int i = 0, j = 0;
-    while(i < 256){
-        while((i+1 < 256) && inverseHistEqMap[i+1] != -1){
+    while (i < 256)
+    {
+        while ((i + 1 < 256) && inverseHistEqMap[i + 1] != -1)
+        {
             i++;
         }
-        //now we find an "i" s.t. map[i] is meaningful but map[i+1] is not
-        for(j = 1; (i+j < 256) && inverseHistEqMap[i+j] == -1; j++){
-            //fill all meaningless map[i+1...?] as map[i]
-            inverseHistEqMap[i+j] = inverseHistEqMap[i];
+        // now we find an "i" s.t. map[i] is meaningful but map[i+1] is not
+        for (j = 1; (i + j < 256) && inverseHistEqMap[i + j] == -1; j++)
+        {
+            // fill all meaningless map[i+1...?] as map[i]
+            inverseHistEqMap[i + j] = inverseHistEqMap[i];
         }
         i += j;
     }
@@ -191,59 +235,66 @@ void GetInverseEqHist(vector<double>& hist, vector<int>& inverseHistEqMap){
     // cout << endl;
 };
 
-bool Histst(cv::Mat& img, vector<double> stdHist){
-    //p.98
+bool Histst(cv::Mat &img, vector<double> stdHist)
+{
+    // p.98
     vector<int> histeqMap;
-    
-    if(!GetHisteqMap(img, histeqMap)) return false;
 
-    //find the inverse of histogram equalization map for stdHist
+    if (!GetHisteqMap(img, histeqMap))
+        return false;
+
+    // find the inverse of histogram equalization map for stdHist
     vector<int> inverseHistEqMap;
     GetInverseEqHist(stdHist, inverseHistEqMap);
 
-    for(int i = 0; i < img.rows; i++){
-        for(int j = 0; j < img.cols; j++){
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
             int val = img.at<uchar>(i, j);
-            //doing histogram equalization
+            // doing histogram equalization
             val = histeqMap[val];
-            //from equalized histogram to target histogram
+            // from equalized histogram to target histogram
             val = inverseHistEqMap[val];
-            val = min(max((int)val, 0), 255); 
+            val = min(max((int)val, 0), 255);
             img.at<uchar>(i, j) = val;
         }
     }
-    
+
     return true;
 };
 
-bool Histst(cv::Mat& img, cv::Mat& stdImg){
-    //p.99
+bool Histst(cv::Mat &img, cv::Mat &stdImg)
+{
+    // p.99
     vector<double> stdHist;
     GenHist(stdImg, stdHist);
     return Histst(img, stdHist);
 };
 
-void DrawHist(vector<double>& hist, cv::Mat& histImage, int img_h){
-    //output image size
+void DrawHist(vector<double> &hist, cv::Mat &histImage, int img_h)
+{
+    // output image size
     int img_w = img_h;
-    int bin_w = (int)((double)img_w/hist.size());
+    int bin_w = (int)((double)img_w / hist.size());
 
     histImage = cv::Mat(img_h, img_w, CV_8UC1, cv::Scalar(0));
 
     /// Normalize the result to [ 0, histImage.rows ]
-    cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+    cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
 
     /// Draw for each channel
-    for( int i = 1; i < hist.size(); i++ )
+    for (int i = 1; i < hist.size(); i++)
     {
-        cv::line(histImage, cv::Point(bin_w*(i-1), img_h - hist[i-1]) ,
-                        cv::Point(bin_w*(i), img_h - hist[i]),
-                        cv::Scalar(255), 2, 8, 0);
+        cv::line(histImage, cv::Point(bin_w * (i - 1), img_h - hist[i - 1]),
+                 cv::Point(bin_w * (i), img_h - hist[i]),
+                 cv::Scalar(255), 2, 8, 0);
     }
 };
 
-
-int main(){
+#ifdef CH3
+int main()
+{
     bool isSave = false;
     cv::Mat img = cv::imread("images/Lenna.png", 0);
     cv::Mat work = img.clone();
@@ -258,7 +309,7 @@ int main(){
     vector<cv::Mat> thresholdImgs = {img, work};
     ShowHorizontal(thresholdImgs, string("Threshold") + "_" + to_string(threshold), isSave);
 
-    //LinTran
+    // LinTran
     cout << "Please input dFa and dFb for linear transform..." << endl;
     double dFa, dFb;
     cin >> dFa >> dFb;
@@ -269,7 +320,7 @@ int main(){
     string linTranTitle = string("Linear Transform") + " " + to_string_with_precision(dFa, 2) + " " + to_string_with_precision(dFb, 2);
     ShowHorizontal(linTranImgs, linTranTitle, isSave);
 
-    //GammaTran
+    // GammaTran
     cout << "Please input gamma and comp for gamma transform..." << endl;
     double gamma, comp;
     cin >> gamma >> comp;
@@ -280,7 +331,7 @@ int main(){
     string gammaTranTitle = string("Gamma Transform") + " " + to_string_with_precision(gamma, 2) + " " + to_string_with_precision(comp, 2);
     ShowHorizontal(gammaTranImgs, gammaTranTitle, isSave);
 
-    //LogTran
+    // LogTran
     cout << "Please input dC for log transform..." << endl;
     double dC;
     cin >> dC;
@@ -291,7 +342,7 @@ int main(){
     string logTranTitle = string("Log Transform") + " " + to_string_with_precision(dC, 2);
     ShowHorizontal(logTranImgs, "Log Transform", isSave);
 
-    //ParLinTran
+    // ParLinTran
     cout << "Please input x1, x2, y1, y2 for partial linear transform..." << endl;
     int x1, x2, y1, y2;
     cin >> x1 >> x2 >> y1 >> y2;
@@ -301,8 +352,8 @@ int main(){
     vector<cv::Mat> parLinTranImgs = {img, work};
     string parLinTranTitle = string("Paritial Linear Transform") + " " + to_string(x1) + " " + to_string(x2) + " " + to_string(y1) + " " + to_string(y2);
     ShowHorizontal(parLinTranImgs, parLinTranTitle, isSave);
-    
-    //Histogram equalization
+
+    // Histogram equalization
     vector<double> hist;
     cout << "Please input the bin count of histogram for histogram equalization..." << endl;
     int n;
@@ -319,7 +370,7 @@ int main(){
     string histEqTitle = string("Histogram Equalization") + " " + to_string(n);
     ShowHorizontal(HistEqImgs, histEqTitle, isSave);
 
-    //Histogram matching
+    // Histogram matching
     cv::Mat img_dark = cv::imread("images/dark.jfif", 0);
     cv::Mat img_light = cv::imread("images/light.jfif", 0);
     work = img.clone();
@@ -339,3 +390,4 @@ int main(){
 
     return 0;
 }
+#endif

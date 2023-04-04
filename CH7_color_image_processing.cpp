@@ -1,8 +1,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/types.hpp>
-#include <opencv2/imgproc.hpp> //line
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/core/hal/interface.h> //CV_8UC3
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/core/hal/interface.h>
 #include <iostream>
 #include <map>
 #include <cmath> //M_PI
@@ -15,18 +15,22 @@ using namespace std;
 double eps = std::numeric_limits<double>::epsilon();
 // double eps = 0.0;
 
-bool RGB2CMY(cv::Mat& img){
-    //p.239
-    //it also serves as CMY2RGB
-    //Note that even if there is RGB in function name, the image's channel order is BGR
-    if(type2str(img.type()) != "8UC3") return false;
+bool RGB2CMY(cv::Mat &img)
+{
+    // p.239
+    // it also serves as CMY2RGB
+    // Note that even if there is RGB in function name, the image's channel order is BGR
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
-            pixel[0] = 255 - pixel[0]; //B
-            pixel[1] = 255 - pixel[1]; //G
-            pixel[2] = 255 - pixel[2]; //R
+            pixel[0] = 255 - pixel[0]; // B
+            pixel[1] = 255 - pixel[1]; // G
+            pixel[2] = 255 - pixel[2]; // R
             img.at<cv::Vec3b>(row, col) = pixel;
         }
     }
@@ -34,27 +38,32 @@ bool RGB2CMY(cv::Mat& img){
     return true;
 };
 
-bool CMY2RGB(cv::Mat& img){
+bool CMY2RGB(cv::Mat &img)
+{
     return RGB2CMY(img);
 };
 
-bool RGB2HSI(cv::Mat& img){ //?
-    //p.243
-    if(type2str(img.type()) != "8UC3") return false;
+bool RGB2HSI(cv::Mat &img)
+{ //?
+    // p.243
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
-            double B = pixel[0]/255.0;
-            double G = pixel[1]/255.0;
-            double R = pixel[2]/255.0;
+            double B = pixel[0] / 255.0;
+            double G = pixel[1] / 255.0;
+            double R = pixel[2] / 255.0;
 
             double minColor = min({B, G, R});
             double maxColor = max({B, G, R});
 
             double H;
             double S;
-            double I = (R+G+B)/3.0; //[0,1]
+            double I = (R + G + B) / 3.0; //[0,1]
 
             // given in textbook??
             // if(I < 0.078431){
@@ -65,25 +74,29 @@ bool RGB2HSI(cv::Mat& img){ //?
             //     S = 1 - 3*minColor/(R+G+B);
             // }
 
-            if(minColor == maxColor){
+            if (minColor == maxColor)
+            {
                 H = 0;
                 S = 0;
-            }else{
-                //its unit is radiance
-                double cosVal = (R-G+R-B)/2.0 / sqrt((R-G)*(R-G) + (R-B)*(G-B) + eps);
-                double radiance = (abs(cosVal-1) < eps) ? 0.0 : (abs(cosVal-(-1)) < eps) ? M_PI : acos(cosVal);
+            }
+            else
+            {
+                // its unit is radiance
+                double cosVal = (R - G + R - B) / 2.0 / sqrt((R - G) * (R - G) + (R - B) * (G - B) + eps);
+                double radiance = (abs(cosVal - 1) < eps) ? 0.0 : (abs(cosVal - (-1)) < eps) ? M_PI
+                                                                                             : acos(cosVal);
                 // double radiance = acos(radiance);
 
-                H = (B <= G) ? radiance : 2.0*M_PI - radiance; //[0,2.0*M_PI]
-                S = 1 - 3.0*minColor/(R+G+B + eps); //[0,1]
+                H = (B <= G) ? radiance : 2.0 * M_PI - radiance; //[0,2.0*M_PI]
+                S = 1 - 3.0 * minColor / (R + G + B + eps);      //[0,1]
             }
 
-            //normalize
-            H = H/(2.0*M_PI) * 255.0;
+            // normalize
+            H = H / (2.0 * M_PI) * 255.0;
             S = S * 255.0;
             I = I * 255.0;
 
-            //put H in R channel, S in G channel, I in B channel
+            // put H in R channel, S in G channel, I in B channel
             img.at<cv::Vec3b>(row, col) = cv::Vec3b((int)I, (int)S, (int)H);
         }
     }
@@ -91,36 +104,45 @@ bool RGB2HSI(cv::Mat& img){ //?
     return true;
 };
 
-bool HSI2RGB(cv::Mat& img){ //?
-    //p.247
-    if(type2str(img.type()) != "8UC3") return false;
+bool HSI2RGB(cv::Mat &img)
+{ //?
+    // p.247
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
-            double I = pixel[0]/255.0; //normalize to [0,1]
-            double S = pixel[1]/255.0; //normalize to [0,1]
-            double H = pixel[2]/255.0*2*M_PI; //normalize to [0,2*M_PI]
+            double I = pixel[0] / 255.0;            // normalize to [0,1]
+            double S = pixel[1] / 255.0;            // normalize to [0,1]
+            double H = pixel[2] / 255.0 * 2 * M_PI; // normalize to [0,2*M_PI]
 
             double B, G, R;
 
-            if(H >= 0 && H < M_PI*2.0/3){ //0 to 120 degrees
-                //RG sector
+            if (H >= 0 && H < M_PI * 2.0 / 3)
+            { // 0 to 120 degrees
+                // RG sector
                 B = I * (1.0 - S);
-                R = I * (1.0 + S*cos(H)/cos(M_PI/3.0 - H));
-                G = 3.0*I - (R+B);
-            }else if(H >= M_PI*2.0/3 && H < M_PI*4.0/3){ //120 to 240 degrees
-                //GB sector
-                H = H - M_PI*2.0/3;
+                R = I * (1.0 + S * cos(H) / cos(M_PI / 3.0 - H));
+                G = 3.0 * I - (R + B);
+            }
+            else if (H >= M_PI * 2.0 / 3 && H < M_PI * 4.0 / 3)
+            { // 120 to 240 degrees
+                // GB sector
+                H = H - M_PI * 2.0 / 3;
                 R = I * (1.0 - S);
-                G = I * (1.0 + S*cos(H)/cos(M_PI/3.0 - H));
-                B = 3.0*I - (R+G);
-            }else if(H >= M_PI*4.0/3){ //larger than 240 degrees
-                //BR sector
-                H = H - M_PI*4.0/3;
+                G = I * (1.0 + S * cos(H) / cos(M_PI / 3.0 - H));
+                B = 3.0 * I - (R + G);
+            }
+            else if (H >= M_PI * 4.0 / 3)
+            { // larger than 240 degrees
+                // BR sector
+                H = H - M_PI * 4.0 / 3;
                 G = I * (1.0 - S);
-                B = I * (1.0 + S*cos(H)/cos(M_PI/3.0 - H));
-                R = 3.0*I - (G+B);
+                B = I * (1.0 + S * cos(H) / cos(M_PI / 3.0 - H));
+                R = 3.0 * I - (G + B);
             }
 
             R *= 255.0;
@@ -134,16 +156,20 @@ bool HSI2RGB(cv::Mat& img){ //?
     return true;
 };
 
-bool RGB2HSV(cv::Mat& img){
-    //p.250
-    if(type2str(img.type()) != "8UC3") return false;
+bool RGB2HSV(cv::Mat &img)
+{
+    // p.250
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
-            double B = pixel[0]/255.0;
-            double G = pixel[1]/255.0;
-            double R = pixel[2]/255.0;
+            double B = pixel[0] / 255.0;
+            double G = pixel[1] / 255.0;
+            double R = pixel[2] / 255.0;
 
             double minColor = min({B, G, R});
             double maxColor = max({B, G, R});
@@ -152,29 +178,38 @@ bool RGB2HSV(cv::Mat& img){
 
             V = maxColor;
 
-            if(maxColor == 0){
+            if (maxColor == 0)
+            {
                 S = 0;
-                H = 0; //undefined color
-            }else{
-                S = (maxColor - minColor)/maxColor;
-                if(R == maxColor){
-                    H = (G-B)/(maxColor-minColor)*M_PI/3.0;
-                }else if(G == maxColor){
-                    H = (2 + (B-R)/(maxColor-minColor))*M_PI/3.0;
-                }else if(B == maxColor){
-                    H = (4 + (R-G)/(maxColor-minColor))*M_PI/3.0;
+                H = 0; // undefined color
+            }
+            else
+            {
+                S = (maxColor - minColor) / maxColor;
+                if (R == maxColor)
+                {
+                    H = (G - B) / (maxColor - minColor) * M_PI / 3.0;
                 }
-                if(H < 0){
-                    H += 2*M_PI;
+                else if (G == maxColor)
+                {
+                    H = (2 + (B - R) / (maxColor - minColor)) * M_PI / 3.0;
+                }
+                else if (B == maxColor)
+                {
+                    H = (4 + (R - G) / (maxColor - minColor)) * M_PI / 3.0;
+                }
+                if (H < 0)
+                {
+                    H += 2 * M_PI;
                 }
             }
 
-            //normalize
-            H = H/(2.0*M_PI) * 255.0;
+            // normalize
+            H = H / (2.0 * M_PI) * 255.0;
             S = S * 255.0;
             V = V * 255.0;
 
-            //put H in R channel, S in G channel, V in B channel
+            // put H in R channel, S in G channel, V in B channel
             img.at<cv::Vec3b>(row, col) = cv::Vec3b((int)V, (int)S, (int)H);
         }
     }
@@ -182,56 +217,61 @@ bool RGB2HSV(cv::Mat& img){
     return true;
 };
 
-bool HSV2RGB(cv::Mat& img){
-    //p.250
-    if(type2str(img.type()) != "8UC3") return false;
+bool HSV2RGB(cv::Mat &img)
+{
+    // p.250
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
-            double V = pixel[0]/255.0; //normalize to [0,1]
-            double S = pixel[1]/255.0; //normalize to [0,1]
-            double H = pixel[2]/255.0*2*M_PI; //normalize to [0,2*M_PI]
+            double V = pixel[0] / 255.0;            // normalize to [0,1]
+            double S = pixel[1] / 255.0;            // normalize to [0,1]
+            double H = pixel[2] / 255.0 * 2 * M_PI; // normalize to [0,2*M_PI]
 
             double B, G, R;
 
-            int i = H/(M_PI/3.0); //falls in which sector
-            double f = H/(M_PI/3.0) - i;
-            double p = V * (1-S);
-            double q = V * (1-f*S);
-            double t = V * (1 - (1-f) * S);
+            int i = H / (M_PI / 3.0); // falls in which sector
+            double f = H / (M_PI / 3.0) - i;
+            double p = V * (1 - S);
+            double q = V * (1 - f * S);
+            double t = V * (1 - (1 - f) * S);
 
-            switch(i){
-                case 0:
-                    R = V;
-                    G = t;
-                    B = p;
-                    break;
-                case 1:
-                    R = q;
-                    G = V;
-                    B = p;
-                    break;
-                case 2:
-                    R = q;
-                    G = V;
-                    B = t;
-                    break;
-                case 3:
-                    R = p;
-                    G = q;
-                    B = V;
-                    break;
-                case 4:
-                    R = t;
-                    G = p;
-                    B = V;
-                    break;
-                case 5:
-                    R = V;
-                    G = p;
-                    B = q;
-                    break;
+            switch (i)
+            {
+            case 0:
+                R = V;
+                G = t;
+                B = p;
+                break;
+            case 1:
+                R = q;
+                G = V;
+                B = p;
+                break;
+            case 2:
+                R = q;
+                G = V;
+                B = t;
+                break;
+            case 3:
+                R = p;
+                G = q;
+                B = V;
+                break;
+            case 4:
+                R = t;
+                G = p;
+                B = V;
+                break;
+            case 5:
+                R = V;
+                G = p;
+                B = q;
+                break;
             }
 
             R *= 255.0;
@@ -245,26 +285,30 @@ bool HSV2RGB(cv::Mat& img){
     return true;
 };
 
-bool RGB2YUV(cv::Mat& img){
-    //p.256
-    if(type2str(img.type()) != "8UC3") return false;
+bool RGB2YUV(cv::Mat &img)
+{
+    // p.256
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double B = pixel[0];
             double G = pixel[1];
             double R = pixel[2];
 
-            double Y = 0.299*R + 0.587*G + 0.114*B;
-            double U = 0.567*(B-Y);
-            double V = 0.713*(R-Y);
+            double Y = 0.299 * R + 0.587 * G + 0.114 * B;
+            double U = 0.567 * (B - Y);
+            double V = 0.713 * (R - Y);
 
-            //truncate value exceed the range, it seems we can use a better normalization method?
-            Y = min(max((int)Y, 0), 255); 
-            U = min(max((int)U, 0), 255); 
+            // truncate value exceed the range, it seems we can use a better normalization method?
+            Y = min(max((int)Y, 0), 255);
+            U = min(max((int)U, 0), 255);
             V = min(max((int)V, 0), 255);
-            
+
             img.at<cv::Vec3b>(row, col) = cv::Vec3b((int)V, (int)U, (int)Y);
         }
     }
@@ -272,12 +316,16 @@ bool RGB2YUV(cv::Mat& img){
     return true;
 };
 
-bool YUV2RGB(cv::Mat& img){
-    //p.259
-    if(type2str(img.type()) != "8UC3") return false;
+bool YUV2RGB(cv::Mat &img)
+{
+    // p.259
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double V = pixel[0];
             double U = pixel[1];
@@ -298,26 +346,30 @@ bool YUV2RGB(cv::Mat& img){
     return true;
 };
 
-bool RGB2YIQ(cv::Mat& img){
-    //p.261
-    if(type2str(img.type()) != "8UC3") return false;
+bool RGB2YIQ(cv::Mat &img)
+{
+    // p.261
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double B = pixel[0];
             double G = pixel[1];
             double R = pixel[2];
 
-            double Y = 0.299*R + 0.587*G + 0.114*B;
-            double I = 0.596*R - 0.274*G - 0.322*B;
-            double Q = 0.211*R - 0.523*G + 0.312*B;
+            double Y = 0.299 * R + 0.587 * G + 0.114 * B;
+            double I = 0.596 * R - 0.274 * G - 0.322 * B;
+            double Q = 0.211 * R - 0.523 * G + 0.312 * B;
 
-            //truncate value exceed the range, it seems we can use a better normalization method?
-            Y = min(max((int)Y, 0), 255); 
-            I = min(max((int)I, 0), 255); 
+            // truncate value exceed the range, it seems we can use a better normalization method?
+            Y = min(max((int)Y, 0), 255);
+            I = min(max((int)I, 0), 255);
             Q = min(max((int)Q, 0), 255);
-            
+
             img.at<cv::Vec3b>(row, col) = cv::Vec3b((int)Q, (int)I, (int)Y);
         }
     }
@@ -325,20 +377,24 @@ bool RGB2YIQ(cv::Mat& img){
     return true;
 };
 
-bool YIQ2RGB(cv::Mat& img){
-    //p.263
-    if(type2str(img.type()) != "8UC3") return false;
+bool YIQ2RGB(cv::Mat &img)
+{
+    // p.263
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double Q = pixel[0];
             double I = pixel[1];
             double Y = pixel[2];
 
-            double R = Y + 0.956*I + 0.114*Q;
-            double G = Y - 0.272*I - 0.647*Q;
-            double B = Y - 1.106*I + 1.703*Q;
+            double R = Y + 0.956 * I + 0.114 * Q;
+            double G = Y - 0.272 * I - 0.647 * Q;
+            double B = Y - 1.106 * I + 1.703 * Q;
 
             R = min(max((int)R, 0), 255);
             G = min(max((int)G, 0), 255);
@@ -351,13 +407,15 @@ bool YIQ2RGB(cv::Mat& img){
     return true;
 };
 
-bool compensate(cv::Mat& img){
-    //p.266
+bool compensate(cv::Mat &img)
+{
+    // p.266
     /*
-    select most red, green, blue points int the image and 
+    select most red, green, blue points int the image and
     learn a linear transformation to convert them to true r,g,b
     */
-    if(type2str(img.type()) != "8UC3") return false;
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
     int rMaxR = INT_MIN;
     int cMaxR = INT_MIN;
@@ -372,52 +430,60 @@ bool compensate(cv::Mat& img){
     double minG = std::numeric_limits<double>::max();
     double minB = std::numeric_limits<double>::max();
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double B = pixel[0];
             double G = pixel[1];
             double R = pixel[2];
 
 #if MODE == 1
-            if(R-(B+G) > maxR){
+            if (R - (B + G) > maxR)
+            {
 #else
-            if(255-R+B+G < minR){
+            if (255 - R + B + G < minR)
+            {
 #endif
                 rMaxR = row;
                 cMaxR = col;
 #if MODE == 1
-                maxR = R-(B+G);
+                maxR = R - (B + G);
 #else
-                minR = 255-R+B+G;
+                minR = 255 - R + B + G;
 #endif
             }
 
 #if MODE == 1
-            if(G-(B+R) > maxG){
+            if (G - (B + R) > maxG)
+            {
 #else
-            if(255-G+B+R < minG){
+            if (255 - G + B + R < minG)
+            {
 #endif
                 rMaxG = row;
                 cMaxG = col;
 #if MODE == 1
-                maxG = G-(B+R);
+                maxG = G - (B + R);
 #else
-                minG = 255-G+B+R;
+                minG = 255 - G + B + R;
 #endif
             }
-            
+
 #if MODE == 1
-            if(B-(R+G) > maxB){
+            if (B - (R + G) > maxB)
+            {
 #else
-            if(255-B+R+G < minB){
+            if (255 - B + R + G < minB)
+            {
 #endif
                 rMaxB = row;
                 cMaxB = col;
 #if MODE == 1
-                maxB = B-(R+G);
+                maxB = B - (R + G);
 #else
-                minB = 255-B+R+G;
+                minB = 255 - B + R + G;
 #endif
             }
         }
@@ -427,7 +493,7 @@ bool compensate(cv::Mat& img){
     // cout << "Green: " << rMaxG << " " << cMaxG << " " << maxG << " " << minG << endl;
     // cout << "Blue: "  << rMaxB << " " << cMaxB << " " << maxB << " " << minB << endl;
 
-    //old three point's rgb value
+    // old three point's rgb value
     double r1 = img.at<cv::Vec3b>(rMaxR, cMaxR)[2], g1 = img.at<cv::Vec3b>(rMaxR, cMaxR)[1], b1 = img.at<cv::Vec3b>(rMaxR, cMaxR)[0];
     double r2 = img.at<cv::Vec3b>(rMaxG, cMaxG)[2], g2 = img.at<cv::Vec3b>(rMaxG, cMaxG)[1], b2 = img.at<cv::Vec3b>(rMaxG, cMaxG)[0];
     double r3 = img.at<cv::Vec3b>(rMaxB, cMaxB)[2], g3 = img.at<cv::Vec3b>(rMaxB, cMaxB)[1], b3 = img.at<cv::Vec3b>(rMaxB, cMaxB)[0];
@@ -435,24 +501,23 @@ bool compensate(cv::Mat& img){
     vector<vector<double>> A1 = {
         {r1, r2, r3},
         {g1, g2, g3},
-        {b1, b2, b3}
-    };
+        {b1, b2, b3}};
 
-    //which does the best?
-    //given by textbook, brightness will be lower?
-    double R = 0.3*r1 + 0.59*g1 + 0.11*b1;
-    double G = 0.3*r2 + 0.59*g2 + 0.11*b2;
-    double B = 0.3*r3 + 0.59*g3 + 0.11*b3;
+    // which does the best?
+    // given by textbook, brightness will be lower?
+    double R = 0.3 * r1 + 0.59 * g1 + 0.11 * b1;
+    double G = 0.3 * r2 + 0.59 * g2 + 0.11 * b2;
+    double B = 0.3 * r3 + 0.59 * g3 + 0.11 * b3;
 
     //*3 to restore its brightness?
     // double R = (0.3*r1 + 0.59*g1 + 0.11*b1)*3;
     // double G = (0.3*r2 + 0.59*g2 + 0.11*b2)*3;
     // double B = (0.3*r3 + 0.59*g3 + 0.11*b3)*3;
 
-    //assume each channel contribute same brightness?
-    // double R = (r1+b1+g1)/3.0;
-    // double G = (r2+b2+g2)/3.0;
-    // double B = (r3+b3+g3)/3.0;
+    // assume each channel contribute same brightness?
+    //  double R = (r1+b1+g1)/3.0;
+    //  double G = (r2+b2+g2)/3.0;
+    //  double B = (r3+b3+g3)/3.0;
 
     //*3 to restore its brightness?
     // double R = (r1+b1+g1);
@@ -462,8 +527,7 @@ bool compensate(cv::Mat& img){
     vector<vector<double>> A2 = {
         {R, 0, 0},
         {0, G, 0},
-        {0, 0, B}
-    };
+        {0, 0, B}};
 
     vector<vector<double>> invA1 = A1;
     InvMat(invA1);
@@ -489,22 +553,26 @@ bool compensate(cv::Mat& img){
     // cout << "invC" << endl;
     // PrintMatrix(invC);
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double B = pixel[0];
             double G = pixel[1];
             double R = pixel[2];
-            
+
             vector<vector<double>> oldColor = {{R}, {G}, {B}}; // 3 x 1 matrix
-            vector<vector<double>> newColor; //also a 3 x 1 matrix
+            vector<vector<double>> newColor;                   // also a 3 x 1 matrix
             ProdMat(invC, oldColor, newColor);
             // ProdMat(invA1, oldColor, newColor);
             // oldColor = newColor;
             // ProdMat(A2, oldColor, newColor);
 
-            for(int i = 0; i < 3; i++){
-                newColor[i][0] = min(max((int)newColor[i][0], 0), 255); ;
+            for (int i = 0; i < 3; i++)
+            {
+                newColor[i][0] = min(max((int)newColor[i][0], 0), 255);
+                ;
             }
 
             // if(row == 0 && col % (img.cols/10) == 0){
@@ -521,35 +589,39 @@ bool compensate(cv::Mat& img){
     return true;
 };
 
-bool colorBalance(cv::Mat& img){
-    //p.268
-    //fix green color, do linear transform on red and blue to make the two chosen points "gray"
-    if(type2str(img.type()) != "8UC3") return false;
+bool colorBalance(cv::Mat &img)
+{
+    // p.268
+    // fix green color, do linear transform on red and blue to make the two chosen points "gray"
+    if (type2str(img.type()) != "8UC3")
+        return false;
 
     cv::Vec3b F1 = img.at<cv::Vec3b>(0, 0);
-    //select farther point to avoid "Floating point exception"
-    // cv::Vec3b F2 = img.at<cv::Vec3b>(50, 50);
+    // select farther point to avoid "Floating point exception"
+    //  cv::Vec3b F2 = img.at<cv::Vec3b>(50, 50);
     cv::Vec3b F2 = img.at<cv::Vec3b>(0, 1);
     cv::Vec3b newF1(F1[1], F1[1], F1[1]);
     cv::Vec3b newF2(F2[1], F2[1], F2[1]);
-    //red
-    double K1 = (double)(newF1[2]-newF2[2])/(double)(F1[2]-F2[2]);
+    // red
+    double K1 = (double)(newF1[2] - newF2[2]) / (double)(F1[2] - F2[2]);
     double K2 = newF1[2] - K1 * F1[2];
-    //blue
-    double L1 = (double)(newF1[0]-newF2[0])/(double)(F1[0]-F2[0]);
+    // blue
+    double L1 = (double)(newF1[0] - newF2[0]) / (double)(F1[0] - F2[0]);
     double L2 = newF1[0] - L1 * F1[0];
 
-    for(int row = 0; row < img.rows; row++){
-        for(int col = 0; col < img.cols; col++){
+    for (int row = 0; row < img.rows; row++)
+    {
+        for (int col = 0; col < img.cols; col++)
+        {
             cv::Vec3b pixel = img.at<cv::Vec3b>(row, col);
             double B = pixel[0];
             double G = pixel[1];
             double R = pixel[2];
 
-            double newR = min(max((int)(K1 * R + K2), 0), 255); 
+            double newR = min(max((int)(K1 * R + K2), 0), 255);
             double newG = G;
-            double newB = min(max((int)(L1 * B + K2), 0), 255); 
-            
+            double newB = min(max((int)(L1 * B + K2), 0), 255);
+
             img.at<cv::Vec3b>(row, col) = cv::Vec3b((int)newB, (int)newG, (int)newR);
         }
     }
@@ -558,7 +630,8 @@ bool colorBalance(cv::Mat& img){
 };
 
 #ifdef CH7
-int main(){
+int main()
+{
     cv::Mat img_lenna = cv::imread("images/Lenna.png");
     cv::Mat img_plane = cv::imread("images/plane.bmp");
     cv::Mat img_rgb = cv::imread("images/rgb.tif");
